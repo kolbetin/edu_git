@@ -8,6 +8,8 @@ Date: 22.10.2020
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -33,6 +35,10 @@ public class EntscheidungsknopfTeil1 extends Application {
 
         VBox root = new VBox();
         root.getChildren().add(klickMichButton());
+
+
+
+
 
         Scene scene = new Scene(root, 300, 200);
         primaryStage.setScene(scene);
