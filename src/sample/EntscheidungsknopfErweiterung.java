@@ -19,6 +19,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import javax.swing.*;
+import javax.swing.text.StyledEditorKit;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
         pane = new FlowPane();
         klickmichbutton = new Button("Klick mich!");
         textField = new TextField();
-        savebutton = new Button("save");
+        savebutton = new Button("Save");
 
         // Create MenuBar
         MenuBar menuBar = new MenuBar();
@@ -91,9 +92,10 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
         });
         return pane;
     }
+
     private Pane obereLeiste(){
         final HBox hBox = new HBox(5);
-        hBox.setPadding( new Insets(10,10,10,50));
+        hBox.setPadding( new Insets(15,10,10,50));
 
         savebutton.setOnAction(event -> {
             listePrüfen();
@@ -106,17 +108,14 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
                 else {
                     antworten.add(textField.getText());
                     textField.clear();
-                    gibListe();
+                    System.out.println(antworten);
                 }
             }
 
-
-
-        });
+       });
         hBox.getChildren().addAll(
-                new Text("Tat"), textField, savebutton);
+                new Text("Aktivität"), textField, savebutton);
         return hBox;
-
     }
 
 
@@ -126,11 +125,6 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
         return antworten.get(index);
     }
 
-    private void gibListe(){
-        for (String k : antworten){
-            System.out.println(k);
-        }
-    }
 
     private int listePrüfen() {
         String clearfield = textField.getText().trim().replace("/","").toLowerCase();
@@ -180,7 +174,7 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
             ObjectInputStream ois = new ObjectInputStream(fis);
 
              liste = (ArrayList) ois.readObject();
-             System.out.println("Liste geladen " + liste);
+             System.out.println("Liste geladen: " + liste);
              ois.close();
 
         } catch (ClassNotFoundException | IOException e){
