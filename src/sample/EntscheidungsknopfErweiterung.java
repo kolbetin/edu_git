@@ -7,8 +7,6 @@ Date: 22.10.2020
 package sample;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,25 +16,26 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import javax.swing.*;
-import javax.swing.text.StyledEditorKit;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Random;
+
 
 public class EntscheidungsknopfErweiterung extends Application implements Serializable {
 
     ArrayList<String> antworten;
     Button klickmichbutton;
     Button savebutton;
+    Button removebutton;
     TextField textField;
     Random random;
-    FlowPane pane ;
+    FlowPane pane;
     VBox root;
+    private Laden laden;
+    private Speichern speichern;
 
 
-    public void start( Stage primaryStage) {
+    public void start(Stage primaryStage) {
         root = new VBox();
         BorderPane rootTop = new BorderPane();
         antworten = new ArrayList<>();
@@ -44,6 +43,7 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
         klickmichbutton = new Button("Klick mich!");
         textField = new TextField();
         savebutton = new Button("Save");
+        removebutton = new Button("Neue Liste");
 
         // Create MenuBar
         MenuBar menuBar = new MenuBar();
@@ -54,15 +54,18 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
         // Create MenuItems
         MenuItem loadItem = new MenuItem("Laden");
         loadItem.setOnAction(event -> {
-            ladeListe();
+            laden = new Laden();
+            laden.laden();
+            getLaden();
         });
 
         MenuItem saveItem = new MenuItem("Speichern");
         saveItem.setOnAction(event -> {
-            speichereListe();
+            speichern = new Speichern();
+            speichern.speichereListe(antworten);
         });
 
-        fileMenu.getItems().addAll(loadItem,saveItem);
+        fileMenu.getItems().addAll(loadItem, saveItem);
 
         // Add Menus to the MenuBar
         menuBar.getMenus().addAll(fileMenu);
@@ -71,8 +74,8 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
         root.getChildren().add(obereLeiste());
         root.getChildren().add(klickMichButton());
 
-       // rootTop.setTop(menuBar);
-        Scene scene = new Scene(root, 400, 300);
+        // rootTop.setTop(menuBar);
+        Scene scene = new Scene(root, 500, 300);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Entscheidungsknopf");
         primaryStage.show();
@@ -81,7 +84,7 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
     Pane klickMichButton() {
         klickmichbutton.setFont(Font.font(20));
         //btn.setStyle("-fx-font-weight: bold");
-        klickmichbutton.setPrefWidth(400);
+        klickmichbutton.setPrefWidth(500);
         klickmichbutton.setPrefHeight(250);
 
         pane.setPadding(new Insets(0, 0, 0, 0));
@@ -93,41 +96,53 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
         return pane;
     }
 
-    private Pane obereLeiste(){
+    private Pane obereLeiste() {
         final HBox hBox = new HBox(5);
-        hBox.setPadding( new Insets(15,10,10,50));
+        hBox.setPadding(new Insets(15, 10, 10, 50));
 
         savebutton.setOnAction(event -> {
             listePrüfen();
-            String clearfield = textField.getText().trim().replace("/","");
+            String clearfield = textField.getText().trim().replace("/", "");
 
-            if (clearfield != null && !clearfield.isEmpty()  ) {
-                if (listePrüfen()==-1) {
+            if (clearfield != null && !clearfield.isEmpty()) {
+                if (listePrüfen() == -1) {
                     klickmichbutton.setText("Eintrag ist schon vorhanden!");
-                }
-                else {
+                } else {
                     antworten.add(textField.getText());
                     textField.clear();
                     System.out.println(antworten);
                 }
             }
 
-       });
+        });
+        removebutton.setOnAction(event -> {
+                    antworten.removeAll(antworten);
+                    laden.liste.removeAll(laden.liste);
+                    System.out.println("Liste ist leer");
+                }
+        );
+
         hBox.getChildren().addAll(
-                new Text("Aktivität"), textField, savebutton);
+                new Text("Aktivität"), textField, savebutton, removebutton);
         return hBox;
     }
 
 
-    private String getAntworten(){
+    private String getAntworten() {
         random = new Random();
         int index = random.nextInt(antworten.size());
         return antworten.get(index);
     }
 
+    private String getLaden() {
+        random = new Random();
+        int index = random.nextInt(laden.liste.size());
+        return laden.liste.get(index);
+    }
+
 
     private int listePrüfen() {
-        String clearfield = textField.getText().trim().replace("/","").toLowerCase();
+        String clearfield = textField.getText().trim().replace("/", "").toLowerCase();
         int index = 0;
         boolean suchen = true;
         if (clearfield != null && !clearfield.isEmpty()) {
@@ -135,64 +150,37 @@ public class EntscheidungsknopfErweiterung extends Application implements Serial
                 String suche = antworten.get(index);
                 if (clearfield.equals(suche)) {
                     suchen = false;
-                }
-                else {
+                } else {
                     index++;
                     klickmichbutton.setText("Liste ausgeben!");
                 }
             }
-        }
-        else {
+        } else {
             klickmichbutton.setText("Bitte valide Antwort eingeben!!");
             klickmichbutton.setAlignment(Pos.CENTER);
             klickmichbutton.setWrapText(true);
         }
-        if (suchen){
+        if (suchen) {
             return 1;
-        }
-        else
-        {
+        } else {
             return -1;
         }
     }
 
-
-    public void speichereListe() {
-        try (OutputStream fos = new FileOutputStream("src/antworten.ser");
-             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-            oos.writeObject(antworten);
-            System.out.println("Liste gespeichert: " + antworten);
-        } catch (IOException ex){
-            ex.printStackTrace();
-        }
-    }
-
-    public void ladeListe() {
-        try {
-            ArrayList liste = null;
-            InputStream fis = new FileInputStream("src/antworten.ser");
-            ObjectInputStream ois = new ObjectInputStream(fis);
-
-             liste = (ArrayList) ois.readObject();
-             System.out.println("Liste geladen: " + liste);
-             ois.close();
-
-        } catch (ClassNotFoundException | IOException e){
-            e.printStackTrace();
-        }
-
-    }
-
-
     public static void main(String[] args) {
         launch(args);
     }
-    private void ausgabeKlickmichbutton(){
-        if (antworten.size()>0 ) {
+
+    private void ausgabeKlickmichbutton() {
+        if (antworten.size() > 0) {
             String antwort = getAntworten();
             klickmichbutton.setText(antwort);
+
         }
-        else {
+        if (laden.liste.size() > 0) {
+            String laden = getLaden();
+            klickmichbutton.setText(laden);
+        } else {
             klickmichbutton.setText("Liste ist leer! Bitte etwas eingeben!");
             klickmichbutton.setWrapText(true);
         }
